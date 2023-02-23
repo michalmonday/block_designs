@@ -126,9 +126,7 @@ if { $bCheckIPs == 1 } {
    set list_check_ips "\ 
 xilinx.com:ip:clk_wiz:6.0\
 xilinx.com:ip:system_ila:1.1\
-xilinx.com:ip:util_vector_logic:2.0\
 xilinx.com:ip:xadc_wiz:3.3\
-xilinx.com:ip:xlconstant:1.1\
 "
 
    set list_ips_missing ""
@@ -218,28 +216,17 @@ proc create_root_design { parentCell } {
   set system_ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:system_ila:1.1 system_ila_0 ]
   set_property -dict [ list \
    CONFIG.C_MON_TYPE {NATIVE} \
-   CONFIG.C_NUM_OF_PROBES {8} \
+   CONFIG.C_NUM_OF_PROBES {4} \
    CONFIG.C_PROBE0_TYPE {0} \
    CONFIG.C_PROBE1_TYPE {0} \
    CONFIG.C_PROBE2_TYPE {0} \
    CONFIG.C_PROBE3_TYPE {0} \
-   CONFIG.C_PROBE4_TYPE {0} \
-   CONFIG.C_PROBE5_TYPE {0} \
-   CONFIG.C_PROBE6_TYPE {0} \
-   CONFIG.C_PROBE7_TYPE {0} \
  ] $system_ila_0
-
-  # Create instance: util_vector_logic_0, and set properties
-  set util_vector_logic_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 util_vector_logic_0 ]
-  set_property -dict [ list \
-   CONFIG.C_OPERATION {not} \
-   CONFIG.C_SIZE {1} \
-   CONFIG.LOGO_FILE {data/sym_notgate.png} \
- ] $util_vector_logic_0
 
   # Create instance: xadc_wiz_0, and set properties
   set xadc_wiz_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xadc_wiz:3.3 xadc_wiz_0 ]
   set_property -dict [ list \
+   CONFIG.ADC_CONVERSION_RATE {39} \
    CONFIG.ADC_OFFSET_AND_GAIN_CALIBRATION {false} \
    CONFIG.AVERAGE_ENABLE_VAUXP0_VAUXN0 {true} \
    CONFIG.AVERAGE_ENABLE_VAUXP1_VAUXN1 {true} \
@@ -250,7 +237,7 @@ proc create_root_design { parentCell } {
    CONFIG.AVERAGE_ENABLE_VAUXP6_VAUXN6 {true} \
    CONFIG.AVERAGE_ENABLE_VAUXP7_VAUXN7 {true} \
    CONFIG.AVERAGE_ENABLE_VAUXP8_VAUXN8 {true} \
-   CONFIG.CHANNEL_AVERAGING {16} \
+   CONFIG.CHANNEL_AVERAGING {None} \
    CONFIG.CHANNEL_ENABLE_VAUXP0_VAUXN0 {true} \
    CONFIG.CHANNEL_ENABLE_VAUXP1_VAUXN1 {true} \
    CONFIG.CHANNEL_ENABLE_VAUXP2_VAUXN2 {true} \
@@ -261,7 +248,7 @@ proc create_root_design { parentCell } {
    CONFIG.CHANNEL_ENABLE_VAUXP7_VAUXN7 {true} \
    CONFIG.CHANNEL_ENABLE_VAUXP8_VAUXN8 {true} \
    CONFIG.CHANNEL_ENABLE_VP_VN {false} \
-   CONFIG.ENABLE_AXI4STREAM {true} \
+   CONFIG.ENABLE_AXI4STREAM {false} \
    CONFIG.ENABLE_CALIBRATION_AVERAGING {false} \
    CONFIG.ENABLE_EXTERNAL_MUX {true} \
    CONFIG.ENABLE_RESET {true} \
@@ -275,21 +262,11 @@ proc create_root_design { parentCell } {
    CONFIG.SENSOR_OFFSET_AND_GAIN_CALIBRATION {false} \
    CONFIG.SEQUENCER_MODE {Continuous} \
    CONFIG.SINGLE_CHANNEL_SELECTION {VAUXP0_VAUXN0} \
-   CONFIG.USER_TEMP_ALARM {true} \
+   CONFIG.USER_TEMP_ALARM {false} \
    CONFIG.VCCAUX_ALARM {false} \
    CONFIG.VCCINT_ALARM {false} \
    CONFIG.XADC_STARUP_SELECTION {channel_sequencer} \
  ] $xadc_wiz_0
-
-  # Create instance: xlconstant_0, and set properties
-  set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
-  set_property -dict [ list \
-   CONFIG.CONST_VAL {0x10} \
-   CONFIG.CONST_WIDTH {7} \
- ] $xlconstant_0
-
-  # Create instance: xlconstant_1, and set properties
-  set xlconstant_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_1 ]
 
   # Create interface connections
   connect_bd_intf_net -intf_net sys_diff_clock_1 [get_bd_intf_ports sys_diff_clock] [get_bd_intf_pins clk_wiz_0/CLK_IN1_D]
@@ -297,28 +274,17 @@ proc create_root_design { parentCell } {
   # Create port connections
   connect_bd_net -net XADC_VAUX0N_R_1 [get_bd_ports XADC_VAUX0N_R] [get_bd_pins xadc_wiz_0/vauxn0]
   connect_bd_net -net XADC_VAUX0P_R_1 [get_bd_ports XADC_VAUX0P_R] [get_bd_pins xadc_wiz_0/vauxp0]
-  connect_bd_net -net busy_out [get_bd_pins system_ila_0/probe5] [get_bd_pins xadc_wiz_0/busy_out]
-  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_nets busy_out]
-  connect_bd_net -net channel_out [get_bd_pins system_ila_0/probe6] [get_bd_pins xadc_wiz_0/channel_out]
+  connect_bd_net -net channel_out [get_bd_pins system_ila_0/probe0] [get_bd_pins xadc_wiz_0/channel_out]
   set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_nets channel_out]
-  connect_bd_net -net clk_wiz_0_clk_out1 [get_bd_pins clk_wiz_0/clk_out1] [get_bd_pins system_ila_0/clk] [get_bd_pins xadc_wiz_0/m_axis_aclk] [get_bd_pins xadc_wiz_0/s_axis_aclk]
-  connect_bd_net -net do_out [get_bd_pins system_ila_0/probe0] [get_bd_pins xadc_wiz_0/do_out]
+  connect_bd_net -net clk_wiz_0_clk_out1 [get_bd_pins clk_wiz_0/clk_out1] [get_bd_pins system_ila_0/clk] [get_bd_pins xadc_wiz_0/dclk_in]
+  connect_bd_net -net do_out [get_bd_pins system_ila_0/probe1] [get_bd_pins xadc_wiz_0/do_out]
   set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_nets do_out]
-  connect_bd_net -net drdy_out [get_bd_pins system_ila_0/probe1] [get_bd_pins xadc_wiz_0/drdy_out]
+  connect_bd_net -net drdy_out [get_bd_pins system_ila_0/probe2] [get_bd_pins xadc_wiz_0/drdy_out]
   set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_nets drdy_out]
-  connect_bd_net -net m_axis_tdata [get_bd_pins system_ila_0/probe2] [get_bd_pins xadc_wiz_0/m_axis_tdata]
-  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_nets m_axis_tdata]
-  connect_bd_net -net m_axis_tid [get_bd_pins system_ila_0/probe3] [get_bd_pins xadc_wiz_0/m_axis_tid]
-  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_nets m_axis_tid]
-  connect_bd_net -net m_axis_tvalid [get_bd_pins system_ila_0/probe4] [get_bd_pins xadc_wiz_0/m_axis_tvalid]
-  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_nets m_axis_tvalid]
-  connect_bd_net -net muxaddr_out [get_bd_pins system_ila_0/probe7] [get_bd_pins xadc_wiz_0/muxaddr_out]
+  connect_bd_net -net muxaddr_out [get_bd_pins system_ila_0/probe3] [get_bd_pins xadc_wiz_0/daddr_in] [get_bd_pins xadc_wiz_0/muxaddr_out]
   set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_nets muxaddr_out]
-  connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins clk_wiz_0/reset] [get_bd_pins util_vector_logic_0/Op1]
-  connect_bd_net -net util_vector_logic_0_Res [get_bd_pins util_vector_logic_0/Res] [get_bd_pins xadc_wiz_0/m_axis_resetn]
+  connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins clk_wiz_0/reset] [get_bd_pins xadc_wiz_0/reset_in]
   connect_bd_net -net xadc_wiz_0_eoc_out [get_bd_pins xadc_wiz_0/den_in] [get_bd_pins xadc_wiz_0/eoc_out]
-  connect_bd_net -net xlconstant_0_dout [get_bd_pins xadc_wiz_0/daddr_in] [get_bd_pins xlconstant_0/dout]
-  connect_bd_net -net xlconstant_1_dout [get_bd_pins xadc_wiz_0/m_axis_tready] [get_bd_pins xlconstant_1/dout]
 
   # Create address segments
 
@@ -326,7 +292,6 @@ proc create_root_design { parentCell } {
   # Restore current instance
   current_bd_instance $oldCurInst
 
-  validate_bd_design
   save_bd_design
 }
 # End of create_root_design()
@@ -338,4 +303,6 @@ proc create_root_design { parentCell } {
 
 create_root_design ""
 
+
+common::send_gid_msg -ssname BD::TCL -id 2053 -severity "WARNING" "This Tcl script was generated from a block design that has not been validated. It is possible that design <$design_name> may result in errors during validation."
 
